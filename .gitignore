@@ -153,3 +153,6 @@ uv.lock
 # Claude Code interface and settings
 .claude/
 CLAUDE.md
+
+# Security
+.secrets.baseline
