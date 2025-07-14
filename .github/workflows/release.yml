@@ -154,14 +154,28 @@ jobs:
         VERSION="${{ needs.validate-version.outputs.version }}"
         TAG_NAME="${{ needs.validate-version.outputs.tag_name }}"
 
-        # Get the previous tag
-        PREV_TAG=$(git describe --tags --abbrev=0 ${TAG_NAME}^)
+        # Get the previous tag (if exists)
+        PREV_TAG=$(git describe --tags --abbrev=0 ${TAG_NAME}^ 2>/dev/null || echo "")
 
         echo "## What's Changed" > release_notes.md
         echo "" >> release_notes.md
 
-        # Get commits since last tag
-        git log ${PREV_TAG}..${TAG_NAME} --pretty=format:"* %s (@%an)" >> release_notes.md || true
+        # Get commits since last tag (or all commits for first release)
+        if [ -n "$PREV_TAG" ]; then
+          git log ${PREV_TAG}..${TAG_NAME} --pretty=format:"* %s (@%an)" >> release_notes.md || true
+        else
+          echo "This is the first release of FastAPI JWT Harmony! 🎉" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Key Features:" >> release_notes.md
+          echo "- 🔒 Type-safe JWT authentication with Pydantic models" >> release_notes.md
+          echo "- 🚀 FastAPI dependency injection" >> release_notes.md
+          echo "- 📍 Multiple token locations (headers & cookies)" >> release_notes.md
+          echo "- 🛡️ CSRF protection for cookies" >> release_notes.md
+          echo "- 🌐 WebSocket support" >> release_notes.md
+          echo "- 🚫 Token denylist support" >> release_notes.md
+          echo "- 🔐 Asymmetric algorithms (RS256, ES256, etc.)" >> release_notes.md
+          echo "- ✅ 100% test coverage" >> release_notes.md
+        fi
 
         echo "" >> release_notes.md
         echo "## Installation" >> release_notes.md
@@ -170,7 +184,11 @@ jobs:
         echo "pip install fastapi-jwt-harmony==${VERSION}" >> release_notes.md
         echo "\`\`\`" >> release_notes.md
         echo "" >> release_notes.md
-        echo "**Full Changelog**: https://github.com/\${{ github.repository }}/compare/${PREV_TAG}...${TAG_NAME}" >> release_notes.md
+        if [ -n "$PREV_TAG" ]; then
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG_NAME}" >> release_notes.md
+        else
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/commits/${TAG_NAME}" >> release_notes.md
+        fi
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
