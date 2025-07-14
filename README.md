@@ -2,6 +2,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.68+-green.svg)](https://fastapi.tiangolo.com/)
+[![PyPI version](https://img.shields.io/pypi/v/fastapi-jwt-harmony.svg)](https://pypi.org/project/fastapi-jwt-harmony/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A+-green.svg)](https://github.com/astral-sh/ruff)
 
