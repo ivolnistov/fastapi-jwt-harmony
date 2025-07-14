@@ -1,0 +1,190 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "feature"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! ✨
+
+        Please provide as much detail as possible to help us understand your request.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 🎯 Feature Summary
+      description: A brief, clear summary of the feature you'd like to see
+      placeholder: Describe the feature in one or two sentences...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 Problem Statement
+      description: What problem does this feature solve? What use case does it address?
+      placeholder: |
+        I'm always frustrated when...
+        This would help with...
+        Currently, there's no way to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: |
+        I would like to see...
+        The feature should work like...
+        It could be implemented by...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: |
+        I've tried...
+        Another approach could be...
+        Workarounds I've used...
+    validations:
+      required: false
+
+  - type: textarea
+    id: api-design
+    attributes:
+      label: 🛠️ API Design (if applicable)
+      description: If this involves new API methods or changes, describe how you envision the API
+      render: python
+      placeholder: |
+        # Example API usage:
+        @app.get("/protected")
+        def endpoint(auth: JWTHarmony = Depends(NewFeature())):
+            return auth.new_method()
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priority
+      description: How important is this feature to you?
+      options:
+        - "Low - Nice to have"
+        - "Medium - Would be helpful"
+        - "High - Important for my use case"
+        - "Critical - Blocking my project"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 🏷️ Feature Category
+      description: What category does this feature fall into?
+      options:
+        - "Core Authentication"
+        - "Token Management"
+        - "Cookie/Session Handling"
+        - "WebSocket Support"
+        - "Configuration"
+        - "Security"
+        - "Performance"
+        - "Developer Experience"
+        - "Documentation"
+        - "Other"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 🎯 Feature Scope
+      description: What aspects would this feature affect? (Select all that apply)
+      options:
+        - label: New API methods/classes
+        - label: Changes to existing API
+        - label: New configuration options
+        - label: Performance improvements
+        - label: Security enhancements
+        - label: Developer experience improvements
+        - label: Documentation updates
+        - label: Breaking changes (requires major version bump)
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: 🎬 Use Cases
+      description: Describe specific scenarios where this feature would be useful
+      placeholder: |
+        Use case 1: When building a multi-tenant app...
+        Use case 2: For microservices that need...
+        Use case 3: In production environments where...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: 🎁 Benefits
+      description: What benefits would this feature provide to users?
+      placeholder: |
+        - Improved security by...
+        - Better performance through...
+        - Easier development experience with...
+        - Reduced boilerplate code for...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: breaking-changes
+    attributes:
+      label: ⚠️ Breaking Changes
+      description: Would this feature require breaking changes?
+      options:
+        - label: This feature would require breaking changes to the API
+        - label: This feature can be implemented without breaking changes
+        - label: I'm not sure about the impact on existing code
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: 🛠️ Implementation
+      description: Are you interested in helping implement this feature?
+      options:
+        - label: I'm willing to submit a pull request for this feature
+        - label: I can help with testing and feedback
+        - label: I can help with documentation
+        - label: I would prefer someone else to implement this
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 Additional Context
+      description: Any other context, mockups, or examples that would help explain this feature
+      placeholder: |
+        Links to similar features in other libraries...
+        Screenshots or mockups...
+        Related issues or discussions...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to make sure this feature hasn't been requested before
+          required: true
+        - label: I have provided clear use cases for this feature
+          required: true
+        - label: I understand this feature request will be evaluated by the maintainers
+          required: true

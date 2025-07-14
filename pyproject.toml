@@ -1,0 +1,158 @@
+[project]
+name = "fastapi-jwt-harmony"
+dynamic = ["version"]
+dependencies = [
+    'pyjwt>=2.10.1',
+    'fastapi',
+    'pydantic>=2.0',
+]
+requires-python = ">=3.11"
+authors = [
+    { name = "Ilya Volnistov", email = "i.volnistov@gaijin.team" },
+]
+maintainers = [
+    { name = "Ilya Volnistov", email = "i.volnistov@gaijin.team" },
+]
+description = "FastAPI JWT authentication library with Pydantic integration - bringing harmony to your auth flow"
+readme = "README.md"
+keywords = ["jwt", "fastapi", "authentication", "harmony", "pydantic", "fastapi-jwt"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+[project.urls]
+Homepage = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony"
+Documentation = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/blob/main/docs/README.md"
+Repository = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony"
+"Bug Tracker" = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/issues"
+Changelog = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/blob/main/CHANGELOG.md"
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+[project.optional-dependencies]
+asymmetric = [
+    'cryptography>=2.6',
+]
+[project.scripts]
+
+[tool.ruff]
+exclude = [
+    "var",
+    "contrib",
+    ".docker",
+    ".venv",
+    "venv",
+]
+line-length = 160
+indent-width = 4
+target-version = "py311"
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D"
+]
+"docs/examples/*" = [
+    "D", "F401"
+]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+[tool.ruff.lint]
+select = ["E", "F", "T", "I", "D", ]
+ignore = ["D100", "D205", "D212"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+[tool.ruff.lint.isort]
+case-sensitive = true
+detect-same-package = true
+combine-as-imports = true
+[tool.mypy]
+python_version = "3.11"
+platform = "linux"
+strict = true
+show_column_numbers = true
+show_error_context = false
+follow_imports = "silent"
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+exclude = [
+    "var",
+    "contrib",
+    "tests",
+    ".docker",
+    "migrations",
+]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pylint]
+max-line-length = 160
+disable = [
+    "C0301",  # line-too-long
+    "C0302",  # too-many-lines
+    "R0913",  # too-many-arguments
+    "R0917",  # too-many-positional-arguments
+    "R0904",  # too-many-public-methods
+    "R0801",  # duplicate-code
+]
+ignore = [".venv", "venv", "var", "contrib", ".docker", "tests", "docs"]
+load-plugins = ["pylint_pydantic"]
+
+# Hatchling configuration
+[tool.hatch.version]
+path = "src/fastapi_jwt_harmony/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fastapi_jwt_harmony"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "tests/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+
+# UV dependency groups
+[dependency-groups]
+test = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.25.0",
+    "httpx>=0.28.1",
+]
+dev = [
+    "cryptography>=45.0.2",
+    "detect-secrets>=1.5.0",
+    "mypy>=1.16.1",
+    "pre-commit>=4.2.0",
+    "pylint>=3.3.7",
+    "pylint-pydantic>=0.3.5",
+    "ruff>=0.8.4",
+    "twine>=6.0.0",
+]
+build = [
+    "hatchling>=1.25",
+    "build>=1.2.2",
+]

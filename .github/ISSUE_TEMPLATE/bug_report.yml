@@ -1,0 +1,165 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! 🐛
+
+        Please fill out this form as completely as possible to help us understand and reproduce the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Configure JWT with...
+        2. Call endpoint...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: A clear and concise description of what actually happened.
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: 💻 Code Example
+      description: Minimal code example to reproduce the issue
+      render: python
+      placeholder: |
+        from fastapi_jwt_harmony import JWTHarmony
+
+        # Your code here...
+    validations:
+      required: false
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: 📋 Error Traceback
+      description: If applicable, add the full error traceback
+      render: text
+      placeholder: Paste the full traceback here...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: 📦 FastAPI JWT Harmony Version
+      description: What version of FastAPI JWT Harmony are you using?
+      options:
+        - "Latest (main branch)"
+        - "0.1.0"
+        - "0.0.x"
+        - "Other (please specify in additional context)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: python-version
+    attributes:
+      label: 🐍 Python Version
+      description: What version of Python are you using?
+      options:
+        - "3.12"
+        - "3.11"
+        - "3.10"
+        - "Other (please specify in additional context)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: fastapi-version
+    attributes:
+      label: ⚡ FastAPI Version
+      description: What version of FastAPI are you using?
+      options:
+        - "Latest"
+        - "0.115.x"
+        - "0.114.x"
+        - "0.113.x"
+        - "Other (please specify in additional context)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 💻 Operating System
+      description: What operating system are you using?
+      options:
+        - "Linux"
+        - "macOS"
+        - "Windows"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 Environment Details
+      description: Additional environment information
+      placeholder: |
+        - Docker: Yes/No
+        - Cloud provider: AWS/GCP/Azure/Other
+        - Deployment method: uvicorn/gunicorn/docker/etc
+        - Any other relevant details...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to make sure this bug hasn't been reported before
+          required: true
+        - label: I have provided a minimal code example to reproduce the issue
+          required: false
+        - label: I have included the full error traceback (if applicable)
+          required: false
+        - label: I am willing to submit a pull request to fix this bug
+          required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📋 Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might be helpful...
+    validations:
+      required: false

@@ -1,0 +1,228 @@
+name: Pre-release
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      version_suffix:
+        description: 'Pre-release suffix (e.g., alpha, beta, rc1)'
+        required: true
+        type: string
+        default: 'alpha'
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build-prerelease:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Install dependencies
+      run: uv sync --group build
+
+    - name: Generate pre-release version
+      id: version
+      run: |
+        # Get the latest tag or use 0.0.0 if no tags exist
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        BASE_VERSION=${LATEST_TAG#v}
+
+        # Generate suffix
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          SUFFIX="${{ github.event.inputs.version_suffix }}"
+        else
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          SUFFIX="dev${COMMIT_COUNT}.${SHORT_SHA}"
+        fi
+
+        # Create pre-release version
+        PRERELEASE_VERSION="${BASE_VERSION}-${SUFFIX}"
+        TAG_NAME="v${PRERELEASE_VERSION}"
+
+        echo "version=${PRERELEASE_VERSION}" >> $GITHUB_OUTPUT
+        echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+        echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+
+        echo "Pre-release version: ${PRERELEASE_VERSION}"
+
+    - name: Update version in code
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        echo "__version__ = '${VERSION}'" > src/fastapi_jwt_harmony/version.py
+
+    - name: Build package
+      run: uv build
+
+    - name: Check package
+      run: uv run --group build twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: prerelease-dist
+        path: dist/
+        retention-days: 7
+
+  test-prerelease:
+    runs-on: ${{ matrix.os }}
+    needs: build-prerelease
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: prerelease-dist
+        path: dist/
+
+    - name: Test installation
+      run: |
+        pip install dist/*.whl
+        python -c "import fastapi_jwt_harmony; print(f'Successfully imported pre-release version {fastapi_jwt_harmony.__version__}')"
+
+  create-prerelease:
+    runs-on: ubuntu-latest
+    needs: [build-prerelease, test-prerelease]
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: prerelease-dist
+        path: dist/
+
+    - name: Get version from artifacts
+      id: get_version
+      run: |
+        VERSION=$(python -c "
+        import sys
+        sys.path.insert(0, 'dist')
+        from fastapi_jwt_harmony import __version__
+        print(__version__)
+        " 2>/dev/null || echo "unknown")
+
+        if [[ "$VERSION" == "unknown" ]]; then
+          # Fallback: extract from wheel filename
+          WHEEL_FILE=$(ls dist/*.whl | head -1)
+          VERSION=$(basename "$WHEEL_FILE" | sed 's/fastapi_jwt_harmony-\(.*\)-py3.*/\1/')
+        fi
+
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "tag_name=v${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Create pre-release tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag ${{ steps.get_version.outputs.tag_name }}
+        git push origin ${{ steps.get_version.outputs.tag_name }}
+
+    - name: Create GitHub Pre-Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.tag_name }}
+        name: Pre-release ${{ steps.get_version.outputs.tag_name }}
+        body: |
+          ## 🧪 Pre-release ${{ steps.get_version.outputs.version }}
+
+          This is a pre-release version for testing purposes.
+
+          ### ⚠️ Important Notes
+          - This version may contain experimental features
+          - Not recommended for production use
+          - May have breaking changes without notice
+
+          ### 📦 Installation
+          ```bash
+          pip install fastapi-jwt-harmony==${{ steps.get_version.outputs.version }}
+          ```
+
+          ### 🐛 Found an issue?
+          Please report it in our [issue tracker](https://github.com/${{ github.repository }}/issues).
+        files: |
+          dist/*
+        draft: false
+        prerelease: true
+        generate_release_notes: true
+
+  publish-test-pypi:
+    runs-on: ubuntu-latest
+    needs: [build-prerelease, test-prerelease]
+    if: github.event_name == 'workflow_dispatch' && !cancelled()
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/p/fastapi-jwt-harmony
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: prerelease-dist
+        path: dist/
+
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        packages-dir: dist/
+        verbose: true
+        skip-existing: true
+
+  announce-prerelease:
+    runs-on: ubuntu-latest
+    needs: [build-prerelease, create-prerelease, publish-test-pypi]
+    if: always() && needs.build-prerelease.result == 'success'
+    steps:
+    - name: Create pre-release summary
+      run: |
+        echo "## 🧪 Pre-release Build Completed!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ needs.create-prerelease.result }}" == "success" ]]; then
+          echo "### ✅ GitHub Pre-Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Release**: https://github.com/${{ github.repository }}/releases" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [[ "${{ needs.publish-test-pypi.result }}" == "success" ]]; then
+          echo "### ✅ Published to Test PyPI" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test PyPI**: https://test.pypi.org/project/fastapi-jwt-harmony/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🧪 Test Installation" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "pip install -i https://test.pypi.org/simple/ fastapi-jwt-harmony" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Test the pre-release version" >> $GITHUB_STEP_SUMMARY
+        echo "2. Report any issues found" >> $GITHUB_STEP_SUMMARY
+        echo "3. When ready, create a full release" >> $GITHUB_STEP_SUMMARY

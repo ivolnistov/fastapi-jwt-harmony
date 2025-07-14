@@ -1,0 +1,87 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_language_version:
+  python: python3
+
+repos:
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+      - id: mixed-line-ending
+      - id: check-case-conflict
+      - id: check-docstring-first
+
+  # Security - detect secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        exclude: '^(poetry\.lock|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|tests/.*|.*\.min\.js|.*\.min\.css)$'
+
+  # Ruff - Fast Python linter (local)
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --dev ruff check --fix
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --dev ruff format
+        language: system
+        types: [python]
+        pass_filenames: false
+
+  # MyPy - static type checker (local)
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run --dev mypy src/fastapi_jwt_harmony
+        language: system
+        types: [python]
+        files: ^src/fastapi_jwt_harmony/
+        pass_filenames: false
+
+  # Pylint - additional linting (local)
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: uv run --dev pylint src/fastapi_jwt_harmony --fail-under=9.0
+        language: system
+        types: [python]
+        files: ^src/fastapi_jwt_harmony/
+        pass_filenames: false
+
+  # Bandit - security linter
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        args: ['-ll', '--skip', 'B101,B601,B602,B607', '-r', 'src/']
+        exclude: ^tests/
+
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [mypy, pylint, ruff-check, ruff-format]  # Skip local hooks in CI

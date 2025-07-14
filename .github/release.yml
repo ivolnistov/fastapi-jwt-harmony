@@ -1,0 +1,68 @@
+# Configuration for GitHub's automatic release notes generation
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+      - duplicate
+      - question
+      - invalid
+      - wontfix
+    authors:
+      - octocat  # Example user to exclude
+      - dependabot
+
+  categories:
+    - title: 🚀 New Features
+      labels:
+        - feature
+        - enhancement
+        - new-feature
+
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - bugfix
+        - fix
+
+    - title: 📚 Documentation
+      labels:
+        - documentation
+        - docs
+
+    - title: 🔧 Maintenance
+      labels:
+        - maintenance
+        - chore
+        - refactor
+        - cleanup
+
+    - title: 🔒 Security
+      labels:
+        - security
+
+    - title: ⚡ Performance
+      labels:
+        - performance
+        - optimization
+
+    - title: 🧪 Testing
+      labels:
+        - testing
+        - tests
+
+    - title: 🛠️ CI/CD
+      labels:
+        - ci
+        - cd
+        - github-actions
+        - workflow
+
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
+        - dependency-update
+
+    - title: 🔄 Other Changes
+      labels:
+        - "*"
