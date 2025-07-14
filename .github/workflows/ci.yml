@@ -1,0 +1,172 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run tests
+      run: uv run pytest --cov=fastapi_jwt_harmony --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run ruff (linting)
+      run: uv run ruff check src/
+
+    - name: Run ruff (formatting)
+      run: uv run ruff format --check src/
+
+    - name: Run mypy (type checking)
+      run: uv run mypy src/fastapi_jwt_harmony
+
+    - name: Run pylint (additional checks)
+      run: uv run pylint src/fastapi_jwt_harmony --fail-under=9.0
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run security checks
+      run: uv run detect-secrets scan --all-files --baseline .secrets.baseline
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Check examples syntax
+      run: |
+        python -m py_compile docs/examples/*.py
+
+    - name: Test examples can import
+      run: |
+        cd docs/examples
+        for file in *.py; do
+          echo "Testing $file"
+          python -c "import sys; sys.path.insert(0, '../../src'); exec(open('$file').read().split('if __name__')[0])"
+        done
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, lint, security, docs]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Build package
+      run: uv build
+
+    - name: Check package
+      run: uv run twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fastapi-jwt-harmony
+    permissions:
+      id-token: write  # For trusted publishing
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist/
