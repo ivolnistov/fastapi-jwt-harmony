@@ -5,21 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A+-green.svg)](https://github.com/astral-sh/ruff)
 
-A modern, type-safe JWT authentication library for FastAPI with **Pydantic integration** - bringing harmony to your auth flow! =�
+A modern, type-safe JWT authentication library for FastAPI with **Pydantic integration** - bringing harmony to your auth flow! 🎶
 
-## ( Key Features
+## 🔑 Key Features
 
-- = **Type-safe JWT authentication** with full Pydantic model support
-- =� **FastAPI dependency injection** - automatic JWT validation
-- <j **Multiple token locations** - headers, cookies, or both
-- =� **CSRF protection** for cookie-based authentication
-- = **WebSocket support** with dedicated authentication methods
-- =� **User claims as Pydantic models** - strongly typed user data
-- =� **Token denylist/blacklist** support for logout functionality
-- � **Asymmetric algorithms** support (RS256, ES256, etc.)
-- >� **100% test coverage** with comprehensive test suite
+- 🔒 **Type-safe JWT authentication** with full Pydantic model support
+- 🚀 **FastAPI dependency injection** - automatic JWT validation
+- 📍 **Multiple token locations** - headers, cookies, or both
+- 🛡️ **CSRF protection** for cookie-based authentication
+- 🌐 **WebSocket support** with dedicated authentication methods
+- 👤 **User claims as Pydantic models** - strongly typed user data
+- 🚫 **Token denylist/blacklist** support for logout functionality
+- 🔐 **Asymmetric algorithms** support (RS256, ES256, etc.)
+- ✅ **100% test coverage** with comprehensive test suite
 
-## =� Quick Start
+## 🚀 Quick Start
 
 ### Installation
 
@@ -88,7 +88,7 @@ def protected_route(Authorize: JWTHarmony[User] = Depends(JWTHarmonyDep)):
     return {"user": current_user, "message": f"Hello {current_user.username}!"}
 ```
 
-## =� Dependencies Overview
+## 📦 Dependencies Overview
 
 FastAPI JWT Harmony provides several dependency types for different authentication needs:
 
@@ -113,7 +113,7 @@ def sensitive_action(Authorize: JWTHarmony[User] = Depends(JWTHarmonyFresh)):
     return {"message": "Sensitive action performed"}
 ```
 
-## <j Cookie Authentication
+## 🍪 Cookie Authentication
 
 Enable secure cookie-based authentication with CSRF protection:
 
@@ -146,7 +146,7 @@ def logout(response: Response, Authorize: JWTHarmony[User] = Depends(JWTHarmonyD
     return {"message": "Logged out successfully"}
 ```
 
-## = WebSocket Authentication
+## 🌐 WebSocket Authentication
 
 Authenticate WebSocket connections with dedicated methods:
 
@@ -172,7 +172,7 @@ async def websocket_endpoint(
         await websocket.close()
 ```
 
-## =� Token Denylist (Logout)
+## 🚫 Token Denylist (Logout)
 
 Implement secure logout with token blacklisting:
 
@@ -202,7 +202,7 @@ def logout(Authorize: JWTHarmony[User] = Depends(JWTHarmonyDep)):
     return {"message": "Successfully logged out"}
 ```
 
-## � Configuration Options
+## ⚙️ Configuration Options
 
 Comprehensive configuration with sensible defaults:
 
@@ -243,7 +243,7 @@ JWTHarmonyConfig(
 )
 ```
 
-## = Asymmetric Algorithms
+## 🔐 Asymmetric Algorithms
 
 Support for RS256, ES256, and other asymmetric algorithms:
 
@@ -267,7 +267,7 @@ JWTHarmony.configure(
 )
 ```
 
-## >� Testing
+## 🧪 Testing
 
 Run the comprehensive test suite:
 
@@ -282,11 +282,11 @@ uv run pytest
 uv run pytest --cov=fastapi_jwt_harmony
 ```
 
-## =� Development
+## 🛠️ Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/fastapi-jwt-harmony.git
+git clone https://github.com/ivolnistov/fastapi-jwt-harmony.git
 cd fastapi-jwt-harmony
 
 # Install with development dependencies
@@ -301,14 +301,14 @@ uv run mypy src/fastapi_jwt_harmony
 uv run pylint src/fastapi_jwt_harmony
 ```
 
-## =� Project Status
+## 📊 Project Status
 
--  **111 tests passing** - Comprehensive test coverage
--  **Type-safe** - Full mypy compatibility
--  **Modern Python** - Supports Python 3.11+
--  **Production ready** - Used in production applications
+- ✅ **111 tests passing** - Comprehensive test coverage
+- ✅ **Type-safe** - Full mypy compatibility
+- ✅ **Modern Python** - Supports Python 3.11+
+- ✅ **Production ready** - Used in production applications
 
-## > Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please:
 
@@ -318,18 +318,18 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
-## =� License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## =O Acknowledgments
+## 🙏 Acknowledgments
 
 - **FastAPI** for the amazing web framework
 - **Pydantic** for data validation and settings management
 - **PyJWT** for JWT implementation
 - **Original fastapi-jwt-auth** for inspiration
 
-## =� Roadmap
+## 🗺️ Roadmap
 
 - [ ] Rate limiting integration
 - [ ] OAuth2 provider support
@@ -339,4 +339,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with d for the FastAPI community**
+**Made with ❤️ for the FastAPI community**
