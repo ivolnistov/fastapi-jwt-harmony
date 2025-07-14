@@ -329,14 +329,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **PyJWT** for JWT implementation
 - **Original fastapi-jwt-auth** for inspiration
 
-## 🗺️ Roadmap
-
-- [ ] Rate limiting integration
-- [ ] OAuth2 provider support
-- [ ] Enhanced logging and monitoring
-- [ ] Performance optimizations
-- [ ] Documentation website
-
 ---
 
 **Made with ❤️ for the FastAPI community**
