@@ -33,7 +33,7 @@ jobs:
         version: "latest"
 
     - name: Install dependencies
-      run: uv sync --all-extras --dev
+      run: uv sync --all-extras --group dev --group test
 
     - name: Run tests
       run: uv run pytest --cov=fastapi_jwt_harmony --cov-report=xml --cov-report=term-missing
@@ -60,7 +60,7 @@ jobs:
       uses: astral-sh/setup-uv@v4
 
     - name: Install dependencies
-      run: uv sync --all-extras --dev
+      run: uv sync --all-extras --group dev --group test
 
     - name: Run ruff (linting)
       run: uv run ruff check src/
@@ -88,7 +88,7 @@ jobs:
       uses: astral-sh/setup-uv@v4
 
     - name: Install dependencies
-      run: uv sync --all-extras --dev
+      run: uv sync --all-extras --group dev --group test
 
     - name: Run security checks
       run: |
@@ -136,6 +136,9 @@ jobs:
 
     - name: Install uv
       uses: astral-sh/setup-uv@v4
+
+    - name: Install build dependencies
+      run: uv sync --group build
 
     - name: Build package
       run: uv build
