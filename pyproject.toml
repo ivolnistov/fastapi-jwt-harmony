@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: FastAPI",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Security",
@@ -29,11 +30,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 [project.urls]
-Homepage = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony"
-Documentation = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/blob/main/docs/README.md"
-Repository = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony"
-"Bug Tracker" = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/issues"
-Changelog = "https://github.com/fastapi-jwt-harmony/fastapi-jwt-harmony/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ivolnistov/fastapi-jwt-harmony"
+Documentation = "https://github.com/ivolnistov/fastapi-jwt-harmony/blob/main/docs/README.md"
+Repository = "https://github.com/ivolnistov/fastapi-jwt-harmony"
+"Bug Tracker" = "https://github.com/ivolnistov/fastapi-jwt-harmony/issues"
+Changelog = "https://github.com/ivolnistov/fastapi-jwt-harmony/blob/main/CHANGELOG.md"
 [build-system]
 requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
