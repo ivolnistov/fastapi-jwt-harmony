@@ -125,8 +125,11 @@ jobs:
         path: dist/
 
     - name: Test installation
+      shell: bash
       run: |
-        pip install dist/*.whl
+        # Find and install the wheel file
+        WHEEL_FILE=$(find dist -name "*.whl" | head -1)
+        pip install "$WHEEL_FILE"
         python -c "import fastapi_jwt_harmony; print(f'Successfully imported version {fastapi_jwt_harmony.__version__}')"
 
   create-release:
