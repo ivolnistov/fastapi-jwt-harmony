@@ -16,7 +16,7 @@ def client():
     JWTHarmony._user_model_class = SimpleUser
 
     # Set default configuration for header-based auth
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     app = FastAPI()
 
@@ -58,7 +58,7 @@ def test_only_access_token_allowed(client, url, authorize_fixture):
     # Ensure config is set to headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     user = SimpleUser(id='test')
     token = authorize_fixture.create_refresh_token(user_claims=user)
@@ -72,7 +72,7 @@ def test_jwt_required(client, authorize_fixture):
     # Ensure config is set to headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     user = SimpleUser(id='test')
     token = authorize_fixture.create_access_token(user_claims=user)
@@ -86,7 +86,7 @@ def test_jwt_optional(client, authorize_fixture):
     # Ensure config is set to headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     # if header not define return anonym user
     response = client.get(url)
@@ -105,7 +105,7 @@ def test_refresh_required(client, authorize_fixture):
     # Ensure config is set to headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     # only refresh token allowed
     user = SimpleUser(id='test')
@@ -126,7 +126,7 @@ def test_fresh_jwt_required(client, authorize_fixture):
     # Ensure config is set to headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     # only fresh token allowed
     user = SimpleUser(id='test')

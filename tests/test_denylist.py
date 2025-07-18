@@ -25,7 +25,7 @@ def test_denylist_functionality():
 
     JWTHarmony.configure(
         SimpleUser,
-        JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_denylist_enabled=True, authjwt_token_location='headers'),
+        JWTHarmonyConfig(secret_key='testing', denylist_enabled=True, token_location='headers'),
         denylist_callback=check_if_token_in_denylist,
     )
 
@@ -91,7 +91,7 @@ def test_denylist_functionality():
 
 
 def test_denylist_only_checks_configured_token_types():
-    """Test that denylist only checks token types configured in authjwt_denylist_token_checks"""
+    """Test that denylist only checks token types configured in denylist_token_checks"""
     # Reset configuration and callback
     JWTHarmony._config = None
     JWTHarmony._token_in_denylist_callback = None
@@ -105,10 +105,10 @@ def test_denylist_only_checks_configured_token_types():
     JWTHarmony.configure(
         SimpleUser,
         JWTHarmonyConfig(
-            authjwt_secret_key='testing',
-            authjwt_denylist_enabled=True,
-            authjwt_denylist_token_checks={'access'},  # Only check access tokens
-            authjwt_token_location='headers',
+            secret_key='testing',
+            denylist_enabled=True,
+            denylist_token_checks={'access'},  # Only check access tokens
+            token_location='headers',
         ),
         denylist_callback=check_if_token_in_denylist,
     )

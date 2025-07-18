@@ -19,7 +19,7 @@ def client():
     # Configure JWTHarmony for this test
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing'))
 
     app = FastAPI()
 
@@ -66,7 +66,7 @@ def test_verified_token(client, encoded_token, authorize_fixture):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_access_token_expires=2, authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', access_token_expires=2, token_location='headers'))
 
     # Create new JWTHarmony instance with the new config
     auth = JWTHarmony()
@@ -96,11 +96,11 @@ def test_verified_token(client, encoded_token, authorize_fixture):
     JWTHarmony.configure(
         SimpleUser,
         JWTHarmonyConfig(
-            authjwt_secret_key='secret-key',
-            authjwt_access_token_expires=1,
-            authjwt_refresh_token_expires=1,
-            authjwt_decode_leeway=2,
-            authjwt_token_location='headers',
+            secret_key='secret-key',
+            access_token_expires=1,
+            refresh_token_expires=1,
+            decode_leeway=2,
+            token_location='headers',
         ),
     )
 
@@ -128,7 +128,7 @@ def test_get_raw_token(client, default_access_token, encoded_token):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers'))
 
     response = client.get('/raw_token', headers={'Authorization': f'Bearer {encoded_token}'})
     assert response.status_code == 200
@@ -139,7 +139,7 @@ def test_get_raw_jwt(default_access_token, encoded_token):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key'))
 
     auth = JWTHarmony()
     assert auth.get_raw_jwt(encoded_token) == default_access_token
@@ -149,7 +149,7 @@ def test_get_jwt_jti(client, default_access_token, encoded_token):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key'))
 
     auth = JWTHarmony()
     auth._token = encoded_token  # Set the token directly since get_jti doesn't accept encoded_token parameter
@@ -160,7 +160,7 @@ def test_get_jwt_subject(client, default_access_token, encoded_token):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers'))
 
     response = client.get('/get_subject', headers={'Authorization': f'Bearer {encoded_token}'})
     assert response.status_code == 200
@@ -171,7 +171,7 @@ def test_invalid_jwt_issuer(client):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers'))
 
     auth = JWTHarmony()
 
@@ -183,7 +183,7 @@ def test_invalid_jwt_issuer(client):
     assert response.json() == {'hello': 'world'}
 
     # Set decode issuer expectation
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers', authjwt_decode_issuer='urn:foo'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers', decode_issuer='urn:foo'))
 
     # Issuer claim expected and not provided - Not OK
     response = client.get('/protected', headers={'Authorization': f'Bearer {token}'})
@@ -193,7 +193,7 @@ def test_invalid_jwt_issuer(client):
     # Set encode issuer to wrong value
     JWTHarmony.configure(
         SimpleUser,
-        JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers', authjwt_decode_issuer='urn:foo', authjwt_encode_issuer='urn:bar'),
+        JWTHarmonyConfig(secret_key='secret-key', token_location='headers', decode_issuer='urn:foo', encode_issuer='urn:bar'),
     )
 
     # Issuer claim still expected and wrong one provided - not OK
@@ -210,9 +210,7 @@ def test_valid_aud(client, token_aud):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(
-        SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers', authjwt_decode_audience=['foo', 'bar'])
-    )
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers', decode_audience=['foo', 'bar']))
 
     auth = JWTHarmony()
 
@@ -233,7 +231,7 @@ def test_invalid_aud_and_missing_aud(client, token_aud):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret-key', authjwt_token_location='headers', authjwt_decode_audience='foo'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret-key', token_location='headers', decode_audience='foo'))
 
     auth = JWTHarmony()
 
@@ -253,9 +251,7 @@ def test_invalid_decode_algorithms(client):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(
-        SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret', authjwt_token_location='headers', authjwt_decode_algorithms=['HS384', 'RS256'])
-    )
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret', token_location='headers', decode_algorithms=['HS384', 'RS256']))
 
     auth = JWTHarmony()
     user = SimpleUser(id='1')
@@ -271,7 +267,7 @@ def test_valid_asymmetric_algorithms(client):
     JWTHarmony._config = None
 
     # Create HS256 token first
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret', token_location='headers'))
 
     auth_hs = JWTHarmony()
     user = SimpleUser(id='1')
@@ -293,11 +289,11 @@ def test_valid_asymmetric_algorithms(client):
     JWTHarmony.configure(
         SimpleUser,
         JWTHarmonyConfig(
-            authjwt_algorithm='RS256',
-            authjwt_secret_key='secret',
-            authjwt_private_key=PRIVATE_KEY,
-            authjwt_public_key=PUBLIC_KEY,
-            authjwt_token_location='headers',
+            algorithm='RS256',
+            secret_key='secret',
+            private_key=PRIVATE_KEY,
+            public_key=PUBLIC_KEY,
+            token_location='headers',
         ),
     )
 
@@ -318,10 +314,10 @@ def test_invalid_asymmetric_algorithms(client):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_algorithm='RS256', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(algorithm='RS256', token_location='headers'))
 
     auth = JWTHarmony()
-    with pytest.raises(RuntimeError, match=r'authjwt_private_key'):
+    with pytest.raises(RuntimeError, match=r'private_key'):
         user = SimpleUser(id='1')
         auth.create_access_token(user_claims=user)
 
@@ -334,10 +330,10 @@ def test_invalid_asymmetric_algorithms(client):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_algorithm='RS256', authjwt_private_key=PRIVATE_KEY, authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(algorithm='RS256', private_key=PRIVATE_KEY, token_location='headers'))
 
     auth2 = JWTHarmony()
     user = SimpleUser(id='1')
     token = auth2.create_access_token(user_claims=user)
-    with pytest.raises(RuntimeError, match=r'authjwt_public_key'):
+    with pytest.raises(RuntimeError, match=r'public_key'):
         client.get('/protected', headers={'Authorization': f'Bearer {token}'})

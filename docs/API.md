@@ -47,7 +47,6 @@ class JWTHarmonyConfig(BaseSettings):
     authjwt_refresh_cookie_key: str = "refresh_token_cookie"
     authjwt_access_cookie_path: str = "/"
     authjwt_refresh_cookie_path: str = "/"
-    authjwt_cookie_max_age: int | None = None
     authjwt_cookie_domain: str | None = None
     authjwt_cookie_secure: bool = False
     authjwt_cookie_samesite: str | None = None

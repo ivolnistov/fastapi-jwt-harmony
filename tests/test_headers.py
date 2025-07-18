@@ -15,7 +15,7 @@ def client():
     JWTHarmony._config = None
 
     # Set default configuration for header-based auth
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     app = FastAPI()
 
@@ -69,7 +69,7 @@ def test_valid_header(client, authorize_fixture):
     # Reset and reload configuration for headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     user = SimpleUser(id='test')
     token = authorize_fixture.create_access_token(user_claims=user)
@@ -92,7 +92,7 @@ def test_get_jwt_headers_from_request(client, authorize_fixture):
     # Reset and reload configuration for headers
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', token_location='headers'))
 
     user1 = SimpleUser(id='1')
     user2 = SimpleUser(id='2')
@@ -111,7 +111,7 @@ def test_custom_header_name(authorize_fixture):
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_header_name='Foo', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', header_name='Foo', token_location='headers'))
 
     # Create new app with custom config
     app = FastAPI()
@@ -152,7 +152,7 @@ def test_custom_header_type(authorize_fixture):
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_header_type='JWT', authjwt_token_location='headers'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', header_type='JWT', token_location='headers'))
 
     # Define dependency after config is set
     def local_auth_jwt_dependency(request: Request = None, response: Response = None):

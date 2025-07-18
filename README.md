@@ -52,8 +52,8 @@ class User(BaseModel):
 JWTHarmony.configure(
     User,
     {
-        "authjwt_secret_key": "your-secret-key",  # pragma: allowlist secret
-        "authjwt_token_location": {"headers", "cookies"}  # Support both
+        "secret_key": "your-secret-key",  # pragma: allowlist secret
+        "token_location": {"headers", "cookies"}  # Support both
     }
 )
 
@@ -62,8 +62,8 @@ JWTHarmony.configure(
 # JWTHarmony.configure(
 #     User,
 #     JWTHarmonyConfig(
-#         authjwt_secret_key="your-secret-key",  # pragma: allowlist secret
-#         authjwt_token_location={"headers", "cookies"}
+#         secret_key="your-secret-key",  # pragma: allowlist secret
+#         token_location={"headers", "cookies"}
 #     )
 # )
 
@@ -124,11 +124,11 @@ from fastapi import Response
 JWTHarmony.configure(
     User,
     {
-        "authjwt_secret_key": "your-secret-key",  # pragma: allowlist secret
-        "authjwt_token_location": {"cookies"},
-        "authjwt_cookie_csrf_protect": True,
-        "authjwt_cookie_secure": True,  # HTTPS only
-        "authjwt_cookie_samesite": "strict"
+        "secret_key": "your-secret-key",  # pragma: allowlist secret
+        "token_location": {"cookies"},
+        "cookie_csrf_protect": True,
+        "cookie_secure": True,  # HTTPS only
+        "cookie_samesite": "strict"
     }
 )
 
@@ -189,9 +189,9 @@ def check_if_token_revoked(jwt_payload: dict) -> bool:
 JWTHarmony.configure(
     User,
     {
-        "authjwt_secret_key": "your-secret-key",  # pragma: allowlist secret
-        "authjwt_denylist_enabled": True,
-        "authjwt_denylist_token_checks": {"access", "refresh"}
+        "secret_key": "your-secret-key",  # pragma: allowlist secret
+        "denylist_enabled": True,
+        "denylist_token_checks": {"access", "refresh"}
     },
     denylist_callback=check_if_token_revoked
 )
@@ -212,35 +212,35 @@ from datetime import timedelta
 
 JWTHarmonyConfig(
     # Core settings
-    authjwt_secret_key="your-secret-key",           # Required for HS256  # pragma: allowlist secret
-    authjwt_algorithm="HS256",                      # JWT algorithm
-    authjwt_token_location={"headers"},             # Where to look for tokens
+    secret_key="your-secret-key",           # Required for HS256  # pragma: allowlist secret
+    algorithm="HS256",                      # JWT algorithm
+    token_location={"headers"},             # Where to look for tokens
 
     # Token expiration
-    authjwt_access_token_expires=timedelta(minutes=15),
-    authjwt_refresh_token_expires=timedelta(days=30),
+    access_token_expires=timedelta(minutes=15),
+    refresh_token_expires=timedelta(days=30),
 
     # Headers
-    authjwt_header_name="Authorization",
-    authjwt_header_type="Bearer",
+    header_name="Authorization",
+    header_type="Bearer",
 
     # Cookies
-    authjwt_cookie_secure=False,                    # Set True for HTTPS
-    authjwt_cookie_csrf_protect=True,               # CSRF protection
-    authjwt_cookie_samesite="strict",
+    cookie_secure=False,                    # Set True for HTTPS
+    cookie_csrf_protect=True,               # CSRF protection
+    cookie_samesite="strict",
 
     # Asymmetric keys (for RS256, ES256, etc.)
-    authjwt_private_key=None,                       # For signing
-    authjwt_public_key=None,                        # For verification
+    private_key=None,                       # For signing
+    public_key=None,                        # For verification
 
     # Denylist
-    authjwt_denylist_enabled=False,
-    authjwt_denylist_token_checks={"access", "refresh"},
+    denylist_enabled=False,
+    denylist_token_checks={"access", "refresh"},
 
     # Validation
-    authjwt_decode_leeway=0,                        # Clock skew tolerance
-    authjwt_decode_audience=None,                   # Expected audience
-    authjwt_decode_issuer=None,                     # Expected issuer
+    decode_leeway=0,                        # Clock skew tolerance
+    decode_audience=None,                   # Expected audience
+    decode_issuer=None,                     # Expected issuer
 )
 ```
 
@@ -261,9 +261,9 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu7...
 JWTHarmony.configure(
     User,
     JWTHarmonyConfig(
-        authjwt_algorithm="RS256",
-        authjwt_private_key=private_key,  # For signing tokens  # pragma: allowlist secret
-        authjwt_public_key=public_key,    # For verifying tokens  # pragma: allowlist secret
+        algorithm="RS256",
+        private_key=private_key,  # For signing tokens  # pragma: allowlist secret
+        public_key=public_key,    # For verifying tokens  # pragma: allowlist secret
     )
 )
 ```

@@ -1,7 +1,8 @@
 """HTTP (FastAPI) JWT authentication implementation."""
 
 import hmac
-from typing import Literal, Optional
+from datetime import timedelta
+from typing import Optional, Union
 
 from fastapi import Request, Response
 
@@ -31,7 +32,7 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
 
         # Extract token from headers if present
         if req and self.jwt_in_headers:
-            if auth := req.headers.get(self.config.authjwt_header_name):
+            if auth := req.headers.get(self.config.header_name):
                 self._get_jwt_from_headers(auth)
 
     def jwt_required(self) -> None:
@@ -57,14 +58,14 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
             else:
                 # No token in headers
                 if not self.jwt_in_cookies:
-                    raise MissingTokenError(f'Missing {self.config.authjwt_header_name} Header')
+                    raise MissingTokenError(f'Missing {self.config.header_name} Header')
                 # Continue to check cookies
 
         # Try cookies if enabled
         if self.jwt_in_cookies:
             if self._request is None:
                 raise RuntimeError('Request object is required for cookie authentication')
-            self._verify_and_get_jwt_in_cookies('access', self._request)
+            self._verify_and_get_jwt_in_cookies(self._request, self.config.access_cookie_key, self.config.access_csrf_header_name, 'access')
 
     def jwt_optional(self) -> None:
         """
@@ -112,14 +113,14 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
             else:
                 # No token in headers
                 if not self.jwt_in_cookies:
-                    raise MissingTokenError(f'Missing {self.config.authjwt_header_name} Header')
+                    raise MissingTokenError(f'Missing {self.config.header_name} Header')
                 # Continue to check cookies
 
         # Try cookies if enabled
         if self.jwt_in_cookies:
             if self._request is None:
                 raise RuntimeError('Request object is required for cookie authentication')
-            self._verify_and_get_jwt_in_cookies('refresh', self._request)
+            self._verify_and_get_jwt_in_cookies(self._request, self.config.refresh_cookie_key, self.config.refresh_csrf_header_name, 'refresh')
 
     def fresh_jwt_required(self) -> None:
         """
@@ -145,14 +146,14 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
             else:
                 # No token in headers
                 if not self.jwt_in_cookies:
-                    raise MissingTokenError(f'Missing {self.config.authjwt_header_name} Header')
+                    raise MissingTokenError(f'Missing {self.config.header_name} Header')
                 # Continue to check cookies
 
         # Try cookies if enabled
         if self.jwt_in_cookies:
             if self._request is None:
                 raise RuntimeError('Request object is required for cookie authentication')
-            self._verify_and_get_jwt_in_cookies('access', self._request, fresh=True)
+            self._verify_and_get_jwt_in_cookies(self._request, self.config.access_cookie_key, self.config.access_csrf_header_name, 'access', fresh=True)
 
     def set_access_cookies(self, encoded_access_token: str, response: Optional[Response] = None, max_age: Optional[int] = None) -> None:
         """
@@ -167,28 +168,26 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
         if not response:
             raise RuntimeError('Response object is required to set cookies')
 
-        if not isinstance(response, Response):
-            raise TypeError('response must be a Response object')
-
-        if max_age is not None and not isinstance(max_age, int):
-            raise TypeError('max_age must be an int')
+        # Calculate max_age from access token expiration if not provided
+        if max_age is None:
+            max_age = self._get_cookie_max_age(self.config.access_token_expires)
 
         # Set main access token cookie
-        cookie_key = self.config.authjwt_access_cookie_key
+        cookie_key = self.config.access_cookie_key
         response.set_cookie(
             key=cookie_key,
             value=encoded_access_token,
-            max_age=max_age or self.config.authjwt_cookie_max_age,
-            path=self.config.authjwt_access_cookie_path,
-            domain=self.config.authjwt_cookie_domain,
-            secure=self.config.authjwt_cookie_secure,
+            max_age=max_age,
+            path=self.config.access_cookie_path,
+            domain=self.config.cookie_domain,
+            secure=self.config.cookie_secure,
             httponly=True,
-            samesite=self.config.authjwt_cookie_samesite,
+            samesite=self.config.cookie_samesite,
         )
 
         # Set CSRF cookie if protection is enabled
-        if self.config.authjwt_cookie_csrf_protect:
-            self._set_csrf_cookie(encoded_access_token, response, 'access')
+        if self.config.cookie_csrf_protect:
+            self._set_csrf_cookie(encoded_access_token, response, self.config.access_csrf_cookie_key, self.config.access_cookie_path, max_age)
 
     def set_refresh_cookies(self, encoded_refresh_token: str, response: Optional[Response] = None, max_age: Optional[int] = None) -> None:
         """
@@ -203,28 +202,26 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
         if not response:
             raise RuntimeError('Response object is required to set cookies')
 
-        if not isinstance(response, Response):
-            raise TypeError('response must be a Response object')
-
-        if max_age is not None and not isinstance(max_age, int):
-            raise TypeError('max_age must be an int')
+        # Calculate max_age from refresh token expiration if not provided
+        if max_age is None:
+            max_age = self._get_cookie_max_age(self.config.refresh_token_expires)
 
         # Set main refresh token cookie
-        cookie_key = self.config.authjwt_refresh_cookie_key
+        cookie_key = self.config.refresh_cookie_key
         response.set_cookie(
             key=cookie_key,
             value=encoded_refresh_token,
-            max_age=max_age or self.config.authjwt_cookie_max_age,
-            path=self.config.authjwt_refresh_cookie_path,
-            domain=self.config.authjwt_cookie_domain,
-            secure=self.config.authjwt_cookie_secure,
+            max_age=max_age,
+            path=self.config.refresh_cookie_path,
+            domain=self.config.cookie_domain,
+            secure=self.config.cookie_secure,
             httponly=True,
-            samesite=self.config.authjwt_cookie_samesite,
+            samesite=self.config.cookie_samesite,
         )
 
         # Set CSRF cookie if protection is enabled
-        if self.config.authjwt_cookie_csrf_protect:
-            self._set_csrf_cookie(encoded_refresh_token, response, 'refresh')
+        if self.config.cookie_csrf_protect:
+            self._set_csrf_cookie(encoded_refresh_token, response, self.config.refresh_csrf_cookie_key, self.config.refresh_cookie_path, max_age)
 
     def unset_jwt_cookies(self, response: Optional[Response] = None) -> None:
         """
@@ -247,16 +244,13 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
         if not response:
             raise RuntimeError('Response object is required to unset cookies')
 
-        if not isinstance(response, Response):
-            raise TypeError('response must be a Response object')
-
         # Unset main access token cookie
-        cookie_key = self.config.authjwt_access_cookie_key
-        response.delete_cookie(key=cookie_key, path=self.config.authjwt_access_cookie_path, domain=self.config.authjwt_cookie_domain)
+        cookie_key = self.config.access_cookie_key
+        response.delete_cookie(key=cookie_key, path=self.config.access_cookie_path, domain=self.config.cookie_domain)
 
         # Unset CSRF cookie
-        csrf_key = self.config.authjwt_access_csrf_cookie_key
-        response.delete_cookie(key=csrf_key, path=self.config.authjwt_access_cookie_path, domain=self.config.authjwt_cookie_domain)
+        csrf_key = self.config.access_csrf_cookie_key
+        response.delete_cookie(key=csrf_key, path=self.config.access_cookie_path, domain=self.config.cookie_domain)
 
     def unset_refresh_cookies(self, response: Optional[Response] = None) -> None:
         """
@@ -269,25 +263,24 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
         if not response:
             raise RuntimeError('Response object is required to unset cookies')
 
-        if not isinstance(response, Response):
-            raise TypeError('response must be a Response object')
-
         # Unset main refresh token cookie
-        cookie_key = self.config.authjwt_refresh_cookie_key
-        response.delete_cookie(key=cookie_key, path=self.config.authjwt_refresh_cookie_path, domain=self.config.authjwt_cookie_domain)
+        cookie_key = self.config.refresh_cookie_key
+        response.delete_cookie(key=cookie_key, path=self.config.refresh_cookie_path, domain=self.config.cookie_domain)
 
         # Unset CSRF cookie
-        csrf_key = self.config.authjwt_refresh_csrf_cookie_key
-        response.delete_cookie(key=csrf_key, path=self.config.authjwt_refresh_cookie_path, domain=self.config.authjwt_cookie_domain)
+        csrf_key = self.config.refresh_csrf_cookie_key
+        response.delete_cookie(key=csrf_key, path=self.config.refresh_cookie_path, domain=self.config.cookie_domain)
 
-    def _set_csrf_cookie(self, encoded_token: str, response: Response, token_type: Literal['access', 'refresh']) -> None:
+    def _set_csrf_cookie(self, encoded_token: str, response: Response, cookie_key: str, cookie_path: str, max_age: Optional[int]) -> None:
         """
         Set CSRF protection cookie.
 
         Args:
             encoded_token: The encoded JWT token
             response: Response object to set cookie on
-            token_type: Type of token (access or refresh)
+            cookie_key: The CSRF cookie key to use
+            cookie_path: The cookie path to use
+            max_age: Max age for the cookie in seconds (None if no expiration)
         """
         # Decode token to get CSRF value
         decoded = self.get_raw_jwt(encoded_token)
@@ -296,52 +289,38 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
 
         csrf_value = decoded['csrf']
 
-        # Determine cookie key and path
-        if token_type == 'access':
-            cookie_key = self.config.authjwt_access_csrf_cookie_key
-            cookie_path = self.config.authjwt_access_cookie_path
-        else:
-            cookie_key = self.config.authjwt_refresh_csrf_cookie_key
-            cookie_path = self.config.authjwt_refresh_cookie_path
-
         # Set CSRF cookie (not httponly so JS can read it)
         response.set_cookie(
             key=cookie_key,
             value=str(csrf_value),
-            max_age=self.config.authjwt_cookie_max_age,
+            max_age=max_age,
             path=cookie_path,
-            domain=self.config.authjwt_cookie_domain,
-            secure=self.config.authjwt_cookie_secure,
+            domain=self.config.cookie_domain,
+            secure=self.config.cookie_secure,
             httponly=False,  # Must be False for CSRF
-            samesite=self.config.authjwt_cookie_samesite,
+            samesite=self.config.cookie_samesite,
         )
 
-    def _verify_and_get_jwt_in_cookies(self, type_token: Literal['access', 'refresh'], request: Request, fresh: bool = False) -> None:
+    def _verify_and_get_jwt_in_cookies(self, request: Request, cookie_key: str, csrf_header_name: str, type_token: str, fresh: bool = False) -> None:
         """
         Verify and extract JWT from cookies with CSRF protection.
 
         Args:
-            type_token: Type of token to verify
             request: The request object containing cookies
+            cookie_key: The cookie key to look for
+            csrf_header_name: The CSRF header name to check
+            type_token: Expected token type value ('access' or 'refresh')
             fresh: Whether to require a fresh token
         """
-        # Determine cookie key
-        if type_token == 'access':
-            cookie_key = self.config.authjwt_access_cookie_key
-            csrf_header_name = self.config.authjwt_access_csrf_header_name
-        else:
-            cookie_key = self.config.authjwt_refresh_cookie_key
-            csrf_header_name = self.config.authjwt_refresh_csrf_header_name
-
         # Extract token from cookies
         cookie = request.cookies.get(cookie_key)
         if not cookie:
             raise MissingTokenError(f'Missing cookie {cookie_key}')
 
         # Check CSRF protection if enabled
-        if self.config.authjwt_cookie_csrf_protect:
+        if self.config.cookie_csrf_protect:
             # Check if method requires CSRF
-            if request.method in self.config.authjwt_csrf_methods:
+            if request.method in self.config.csrf_methods:
                 # Get CSRF token from header
                 csrf_token = request.headers.get(csrf_header_name)
                 if not csrf_token:
@@ -380,7 +359,7 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
             request: The request object containing cookies
         """
         # Try to get access token from cookies
-        cookie_key = self.config.authjwt_access_cookie_key
+        cookie_key = self.config.access_cookie_key
         cookie = request.cookies.get(cookie_key)
 
         if not cookie:
@@ -389,8 +368,8 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
 
         try:
             # Check CSRF if enabled and method requires it
-            if self.config.authjwt_cookie_csrf_protect and request.method in self.config.authjwt_csrf_methods:
-                csrf_header_name = self.config.authjwt_access_csrf_header_name
+            if self.config.cookie_csrf_protect and request.method in self.config.csrf_methods:
+                csrf_header_name = self.config.access_csrf_header_name
                 csrf_token = request.headers.get(csrf_header_name)
 
                 if not csrf_token:
@@ -424,6 +403,30 @@ class JWTHarmony(JWTHarmonyBase[UserModelT]):
         except JWTHarmonyException:
             # For optional, we don't raise other exceptions
             self._token = None
+
+    @staticmethod
+    def _get_cookie_max_age(expires: Union[bool, int, timedelta]) -> Optional[int]:
+        """
+        Convert token expiration configuration to cookie max_age.
+
+        Args:
+            expires: Token expiration time (timedelta, seconds as int, or False for no expiry)
+
+        Returns:
+            Max age in seconds for cookie, or None if token doesn't expire
+        """
+        if expires is False:
+            return None
+
+        if isinstance(expires, bool):
+            # Should not happen due to validation, but handle it
+            return None
+
+        if isinstance(expires, timedelta):
+            return int(expires.total_seconds())
+
+        # It's already an int (seconds)
+        return expires
 
 
 # Import required types

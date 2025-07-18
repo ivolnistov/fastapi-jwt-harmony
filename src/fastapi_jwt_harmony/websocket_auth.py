@@ -149,9 +149,9 @@ class JWTHarmonyWS(JWTHarmonyBase[UserModelT]):
 
         # Determine cookie key
         if type_token == 'access':
-            cookie_key = self.config.authjwt_access_cookie_key
+            cookie_key = self.config.access_cookie_key
         else:
-            cookie_key = self.config.authjwt_refresh_cookie_key
+            cookie_key = self.config.refresh_cookie_key
 
         # Extract token from cookies
         cookie = self._websocket.cookies.get(cookie_key)
@@ -159,7 +159,7 @@ class JWTHarmonyWS(JWTHarmonyBase[UserModelT]):
             raise MissingTokenError(f'Missing cookie {cookie_key}')
 
         # Check CSRF protection
-        if self.config.authjwt_cookie_csrf_protect:
+        if self.config.cookie_csrf_protect:
             if not self._csrf_token:
                 raise CSRFError('Missing CSRF Token')
 
@@ -190,7 +190,7 @@ class JWTHarmonyWS(JWTHarmonyBase[UserModelT]):
             return
 
         # Try to get access token from cookies
-        cookie_key = self.config.authjwt_access_cookie_key or 'access_token_cookie'
+        cookie_key = self.config.access_cookie_key or 'access_token_cookie'
         cookie = self._websocket.cookies.get(cookie_key)
 
         if not cookie:
@@ -199,7 +199,7 @@ class JWTHarmonyWS(JWTHarmonyBase[UserModelT]):
 
         try:
             # Check CSRF if enabled
-            if self.config.authjwt_cookie_csrf_protect:
+            if self.config.cookie_csrf_protect:
                 if not self._csrf_token:
                     # No CSRF token provided but required - treat as no auth for optional
                     return

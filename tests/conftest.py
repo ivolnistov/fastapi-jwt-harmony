@@ -9,5 +9,5 @@ from tests.user_models import SimpleUser
 def authorize_fixture() -> JWTHarmony[SimpleUser]:
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing'))
     return JWTHarmony[SimpleUser]()

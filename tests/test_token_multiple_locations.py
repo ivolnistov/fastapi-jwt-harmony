@@ -53,7 +53,7 @@ def test_get_subject_through_cookie_or_headers(url, client):
     # Reset configuration
     JWTHarmony._config = None
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='secret', authjwt_token_location=['headers', 'cookies']))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='secret', token_location=['headers', 'cookies']))
 
     res = client.get('/get-token')
     access_token = res.json()['access']

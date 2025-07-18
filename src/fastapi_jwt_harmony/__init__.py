@@ -1,6 +1,7 @@
 """FastAPI JWT authentication library with Pydantic integration - bringing harmony to your auth flow."""
 
-from .auth_jwt import (
+from .config import JWTHarmonyConfig
+from .dependencies import (
     JWTHarmony,
     JWTHarmonyBare,
     JWTHarmonyDep,
@@ -13,7 +14,6 @@ from .auth_jwt import (
     JWTHarmonyWebSocketOptional,
     JWTHarmonyWebSocketRefresh,
 )
-from .config import JWTHarmonyConfig
 from .exceptions import (
     AccessTokenRequired,
     CSRFError,

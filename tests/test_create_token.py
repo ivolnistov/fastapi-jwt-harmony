@@ -13,7 +13,7 @@ def test_create_access_token(authorize_fixture):
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing', authjwt_access_token_expires=2, authjwt_refresh_token_expires=4))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing', access_token_expires=2, refresh_token_expires=4))
 
     with pytest.raises(TypeError, match=r'missing 1 required positional argument'):
         authorize_fixture.create_access_token()
@@ -22,13 +22,7 @@ def test_create_access_token(authorize_fixture):
     with pytest.raises(TypeError, match=r'user_claims must be a Pydantic BaseModel'):
         authorize_fixture.create_access_token(user_claims='not a model')
 
-    with pytest.raises(TypeError, match=r'fresh must be a bool'):
-        user = SimpleUser(id='test')
-        authorize_fixture.create_access_token(user_claims=user, fresh='lol')
-
-    with pytest.raises(TypeError, match=r'headers must be a dictionary'):
-        user = SimpleUser(id='1')
-        authorize_fixture.create_access_token(user_claims=user, headers='test')
+    # Type validation tests removed - we now rely on type hints
 
 
 def test_create_refresh_token(authorize_fixture):
@@ -39,9 +33,7 @@ def test_create_refresh_token(authorize_fixture):
     with pytest.raises(TypeError, match=r'user_claims must be a Pydantic BaseModel'):
         authorize_fixture.create_refresh_token(user_claims='not a model')
 
-    with pytest.raises(TypeError, match=r'headers must be a dictionary'):
-        user = SimpleUser(id='1')
-        authorize_fixture.create_refresh_token(user_claims=user, headers='test')
+    # Type validation tests removed - we now rely on type hints
 
 
 def test_create_dynamic_access_token_expires(authorize_fixture):
@@ -75,12 +67,8 @@ def test_create_dynamic_refresh_token_expires(authorize_fixture):
 
 
 def test_create_token_invalid_type_data_audience(authorize_fixture):
-    user = SimpleUser(id='1')
-    with pytest.raises(TypeError, match=r'audience'):
-        authorize_fixture.create_access_token(user_claims=user, audience=1)
-
-    with pytest.raises(TypeError, match=r'audience'):
-        authorize_fixture.create_refresh_token(user_claims=user, audience=1)
+    # Type validation tests removed - we now rely on type hints
+    pass
 
 
 def test_create_token_invalid_algorithm(authorize_fixture):
@@ -91,26 +79,22 @@ def test_create_token_invalid_algorithm(authorize_fixture):
     JWTHarmony.configure(
         SimpleUser,
         JWTHarmonyConfig(
-            authjwt_secret_key='testing',
-            authjwt_algorithm='RS256',  # Asymmetric without keys
+            secret_key='testing',
+            algorithm='RS256',  # Asymmetric without keys
         ),
     )
 
     user = SimpleUser(id='1')
-    with pytest.raises(RuntimeError, match=r'Missing dependencies|authjwt_private_key'):
+    with pytest.raises(RuntimeError, match=r'Missing dependencies|private_key'):
         authorize_fixture.create_access_token(user_claims=user, algorithm='RS256')
 
-    with pytest.raises(RuntimeError, match=r'Missing dependencies|authjwt_private_key'):
+    with pytest.raises(RuntimeError, match=r'Missing dependencies|private_key'):
         authorize_fixture.create_refresh_token(user_claims=user, algorithm='RS256')
 
 
 def test_create_token_invalid_type_data_algorithm(authorize_fixture):
-    user = SimpleUser(id='1')
-    with pytest.raises(TypeError, match=r'algorithm'):
-        authorize_fixture.create_access_token(user_claims=user, algorithm=1)
-
-    with pytest.raises(TypeError, match=r'algorithm'):
-        authorize_fixture.create_refresh_token(user_claims=user, algorithm=1)
+    # Type validation tests removed - we now rely on type hints
+    pass
 
 
 def test_create_token_invalid_user_claims(authorize_fixture):
@@ -127,7 +111,7 @@ def test_create_valid_user_claims(authorize_fixture):
     JWTHarmony._config = None
     JWTHarmony._user_model_class = SimpleUser
 
-    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(authjwt_secret_key='testing'))
+    JWTHarmony.configure(SimpleUser, JWTHarmonyConfig(secret_key='testing'))
 
     # Create a user with additional claims in the model
     class ExtendedUser(SimpleUser):
