@@ -152,26 +152,5 @@ jobs:
         name: dist
         path: dist/
 
-  publish:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'release' && github.event.action == 'published'
-    environment:
-      name: pypi
-      url: https://pypi.org/p/fastapi-jwt-harmony
-    permissions:
-      id-token: write  # For trusted publishing
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist/
-
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        packages-dir: dist/
+  # Publish step removed - publication happens only through release.yml workflow
+  # to avoid conflicts with trusted publisher configuration
