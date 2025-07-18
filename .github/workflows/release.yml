@@ -20,8 +20,61 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
+  check-ci-status:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get commit SHA
+      id: get-sha
+      run: |
+        if [[ "${{ github.event_name }}" == "push" ]]; then
+          echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+        else
+          # For workflow_dispatch, use the current HEAD
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check CI status
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const sha = '${{ steps.get-sha.outputs.sha }}';
+          console.log(`Checking CI status for commit: ${sha}`);
+
+          // Get check runs for this commit
+          const { data: checkRuns } = await github.rest.checks.listForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: sha,
+          });
+
+          // Find CI/CD workflow runs
+          const ciRuns = checkRuns.check_runs.filter(run =>
+            run.name.includes('test') || run.name.includes('lint') || run.name.includes('security')
+          );
+
+          if (ciRuns.length === 0) {
+            core.setFailed('No CI runs found for this commit. Please ensure CI has run successfully.');
+            return;
+          }
+
+          // Check if all CI runs passed
+          const failedRuns = ciRuns.filter(run =>
+            run.conclusion !== 'success' && run.conclusion !== 'skipped'
+          );
+
+          if (failedRuns.length > 0) {
+            const failedNames = failedRuns.map(run => `${run.name}: ${run.conclusion}`).join(', ');
+            core.setFailed(`CI checks failed: ${failedNames}`);
+            return;
+          }
+
+          console.log('All CI checks passed!');
+
   validate-version:
     runs-on: ubuntu-latest
+    needs: check-ci-status
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag_name: ${{ steps.version.outputs.tag_name }}
