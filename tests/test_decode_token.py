@@ -104,9 +104,11 @@ def test_verified_token(client, encoded_token, authorize_fixture):
         ),
     )
 
+    # Create new auth instance with updated config
+    auth2 = JWTHarmony()
     user = SimpleUser(id='test')
-    access_token = auth.create_access_token(user_claims=user)
-    refresh_token = auth.create_refresh_token(user_claims=user)
+    access_token = auth2.create_access_token(user_claims=user)
+    refresh_token = auth2.create_refresh_token(user_claims=user)
     time.sleep(2)
     # JWT payload is now expired
     # But with some leeway, it will still validate
